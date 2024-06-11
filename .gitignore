@@ -10,6 +10,9 @@ __pycache__/
 data/
 pretrained_models/
 model_and_logs/
+models2/
+models_character/
+models/
 
 # Distribution / packaging
 .Python
