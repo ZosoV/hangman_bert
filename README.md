@@ -2,6 +2,11 @@
 
 The following is a proposal for training a model to play the Hangman game. In the Hangman game, we typically begin with hidden spaces that correspond to the characters of a word. The objective is to guess the word by making sequential guesses of individual characters. In this particular case, the player is allowed only 6 mistakes before losing the game.
 
+![](assets/mlm.png)
+***Masked language model training.*** *Retrieved from [Speech and Language Processing](https://web.stanford.edu/~jurafsky/slp3/11.pdf). In this example, three of the input tokens are selected, two of
+which are masked and the third is replaced with an unrelated word. The probabilities assigned by the model to
+these three items are used as the training loss. The other 5 tokens don’t play a role in training loss. For Hangman the tokens are replaced by characters instead of complete words.*
+
 ## Proposal
 
 The proposal is to use a bidirectional transformer model (specifically BERT) where the input tokens are characters from words (not subwords as the original BERT). This was achieved by adding spaces between the characters of each word. By considering both directions, it's possible to use the prev and next context to detect a hidden character.
@@ -51,19 +56,23 @@ Here are the results for the different methods I tried:
 - Greedy_Random: Test Accuracy Unique Char: 0.6847
 - Greedy_Random_Prior: Test Accuracy Unique Char: 0.66
 
-## Additional Notebooks
+<!-- ## Additional Notebooks
 
 - The notebook [HangmanCharacterNet.ipynb](HangmanCharacterNet.ipynb) explores an alternative approach using another pretrained model called CharacterNet, which is based on BERT but uses characters as input instead of subwords. However, the results were not significantly different from those obtained using the original BERT model.
 
-- The notebook [HangmanPriorNet.ipynb](HangmanPriorNet.ipynb) investigates the use of additional prior information to improve the model's performance. The approach involves defining a customized loss function based on the relative frequency of characters by word length. This information is valuable because guessing longer words is typically easier than guessing shorter ones.
+- The notebook [HangmanPriorNet.ipynb](HangmanPriorNet.ipynb) investigates the use of additional prior information to improve the model's performance. The approach involves defining a customized loss function based on the relative frequency of characters by word length. This information is valuable because guessing longer words is typically easier than guessing shorter ones. Additionally, vocals are more frequent. -->
+
+
 
 ## Conclusion (Future Work)
 
 I realize that my model performs efficiently when the words are longer because it has more context and fewer patterns to unravel between the guesses. However, my model struggles to predict efficiently the hidden characters in small words. This is primarily because there are many possible patterns in small words, which could match different words.
 
-**Frequencies per word length**
+### Frequencies per word length
 
 To improve performance with small words, my idea was to use the frequencies of characters per word length. I have noticed in [DataExploration.ipynb](DataExploration.ipynb) that characters are differently distributed per length, giving certain priorities to specific characters (mainly vowels).
+
+![](assets/character_distribution.png)
 
 My idea was to leverage these relative frequencies to improve and guide the learning of the Hangman neural network. Initially, I tried to add this information as part of the classifier input by concatenating this prior information to the embeddings, similar to how previous guesses were concatenated. This approach can be found in [HangmanPriorNet.ipynb](HangmanPriorNet.ipynb). However, the results were not significantly different.
 
@@ -71,6 +80,12 @@ My future idea is to leverage this prior information to create an auxiliary loss
 
 Note that I also applied Laplacian smoothing to the prior probabilities because some probabilities were set to zero, and saved these probabilities as part of the data in [data/total_rel_freq.csv](character-bert/data/total_rel_freq.csv).
 
-**Other Character-Level Bidirectional Transform**
+### Point-Wise Mutual Information
+
+Another promising idea is to leverage the point-wise mutual information between characters in each word in the data set.
+
+![](assets/train_pmi.png)
+
+### Other Character-Level Bidirectional Transform
 
 Additionally, I have tried other models as backbones for the `HangmanNet`. Specifically, I tried `google/canine-s`, which is a network that accepts characters as tokens. You can find my implementation in [HangmanCharacterNet.ipynb](character-bert/HangmanCharacterNet.ipynb). This contrasts with BERT, which accepts words. I added spaces to have one embedding per character. My idea was that a model accepting characters as input could be more efficient in recognizing patterns between characters in a word. However, the results were similar to the BERT backbone.
