@@ -21,6 +21,22 @@ I have prepared the data in that masked format in [DataExploration.ipynb](DataEx
 
 Additionally, I used previous guesses as part of the classifier input to improve the model's capabilities. Previous guesses provide strong prior information that we can use to guide model learning. Specifically, this information is concatenated to each of the output embeddings, and feed into the classifier.
 
+## Custom Data Collator for Masking Language Modelling
+
+A custom data collator was implemented to address several issues:
+
+1. Adjust training samples on the fly and generate diversity in the dataset.
+2. Maintain a manageable dataset size.
+3. Generate masking (hidden characters) on the fly, following a similar approach to Masked Language Modeling (MLM) used in BERT.
+4. Different to the original MLM, if I mask a character that is repeated in the word sequence. I have to mask all the ocurrances.
+
+To create the data samples (batches) in the desired format, we utilized the same concept as MLM, which was employed in training the original BERT model. This approach was adapted to randomly mask characters, adhering to the same considerations:
+
+- A percentage of the characters in the word is randomly selected to be masked, given `mlm_probability = 0.5`.
+- Of those selected characters, 80% are masked using the masked token `[MASK]`, while 20% are left unchanged.
+
+NOTE: Unlike the original MLM, I decided not to choose a random character for 10% of the characters. This decision was made to avoid potential instabilities, as words with fewer tokens (characters) can behave differently than the longer sentences used to train the original BERT.
+
 ## Evaluation Metric
 
 The `HangmanNet` returns a prediction for each masked character in the word sequence, but we only need one at a time when playing the hangman game. Therefore, we created a special `accuracy_unique_char` metric to help us choose only one character from the output predictions of the `HangmanNet`.
