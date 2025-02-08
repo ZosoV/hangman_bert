@@ -26,6 +26,8 @@ I have prepared the data in that masked format in [DataExploration.ipynb](DataEx
 
 Additionally, I used previous guesses as part of the classifier input to improve the model's capabilities. Previous guesses provide strong prior information that we can use to guide model learning. Specifically, this information is concatenated to each of the output embeddings, and feed into the classifier.
 
+![](assets/hangman_bert.png)
+
 ## Custom Data Collator for Masking Language Modelling
 
 A custom data collator was implemented to address several issues:
